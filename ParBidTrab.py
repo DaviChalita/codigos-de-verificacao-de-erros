@@ -5,9 +5,22 @@ import sys
 def generateRandomPacket(l,linha):
 
     return [random.randint(0,1) for x in range(linha * l)]
+def somarColunaMatriz(parityMatrix, linha, j):
+    somaMatrizColuna = 0
+    for i in range(linha):
+        somaMatrizColuna += parityMatrix[i][j]
+
+    return somaMatrizColuna
+
+def somarLinhaMatriz(parityMatrix, coluna, i):
+    somaMatrizLinha = 0
+    for j in range(coluna):
+        somaMatrizLinha += parityMatrix[i][j]
+
+    return somaMatrizLinha
 
 def codePacket(originalPacket,linha,coluna):
-    somaMatrizes = 0
+
     parityMatrix = [[0 for x in range(coluna)] for y in range(linha)]
     codedLen = len(originalPacket) / (linha*coluna) * (linha*coluna+linha+coluna);
     codedPacket = [0 for x in range(codedLen)]
@@ -22,7 +35,7 @@ def codePacket(originalPacket,linha,coluna):
         ##
         for j in range(linha):
             for k in range(coluna):
-                parityMatrix[j][k] = originalPacket[i * (linha*coluna) + (coluna * j) + k]
+                parityMatrix[j][k] = originalPacket[(i * linha*coluna) + (coluna * j) + k]
 
         ##
         # Replicacao dos bits de dados no pacote codificado.
@@ -34,8 +47,10 @@ def codePacket(originalPacket,linha,coluna):
         # Calculo dos bits de paridade, que sao colocados
         # no pacote codificado: paridade das colunas.
         ##
+
         for j in range(coluna):
-            if (parityMatrix[0][j] + parityMatrix[1][j]) % 2 == 0:
+            somaMatrizColuna = somarColunaMatriz(parityMatrix, linha, j)
+            if (somaMatrizColuna) % 2 == 0:
                 codedPacket[i * (linha*coluna+linha+coluna) + (linha*coluna) + j] = 0
             else:
                 codedPacket[i * (linha*coluna+linha+coluna) + (linha*coluna) + j] = 1
@@ -44,12 +59,10 @@ def codePacket(originalPacket,linha,coluna):
         # Calculo dos bits de paridade, que sao colocados
         # no pacote codificado: paridade das linhas.
         ##
-        ##CONTINUAR DAQUI
+
         for j in range(linha):
-            for k in range(coluna):
-                somaMatrizes += parityMatrix[j][k]
-        for j in range(linha):
-            if (somaMatrizes % 2 == 0):
+            somaMatrizLinha = somarLinhaMatriz(parityMatrix, coluna, j)
+            if (somaMatrizLinha) % 2 == 0:
                 codedPacket[i * (linha*coluna+linha+coluna) + (linha*coluna+coluna) + j] = 0
             else:
                 codedPacket[i * (linha*coluna+linha+coluna) + (linha*coluna+coluna) + j] = 1
@@ -97,3 +110,4 @@ codedPacket2 = codePacket(originalPacket2,2,3)
 print(codedPacket2)
 codedPacket3 = codePacket(originalPacket3,3,3)
 print(codedPacket3)
+
