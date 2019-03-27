@@ -246,7 +246,8 @@ for i in range(reps):
     totalBitErrorCount1, totalPacketErrorCount1 = contadorErros(bitErrorCount1)
     totalBitErrorCount2, totalPacketErrorCount2 = contadorErros(bitErrorCount2)
     totalBitErrorCount3, totalPacketErrorCount3 = contadorErros(bitErrorCount3)
-
+    
+#CONTINUAR DAQUI!!!
 #da matriz 2x2
 print ('Numero de transmissoes simuladas: {0:d}\n'.format(reps))
 print ('Numero de bits transmitidos: {0:d}'.format(reps * packetLength * 8))
