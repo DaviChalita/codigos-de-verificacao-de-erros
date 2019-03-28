@@ -4,59 +4,39 @@ import sys
 
 def decodePacket(transmittedPacket, linha, coluna):
 
-    parityMatrix = [[0 for x in range(4)] for y in range(2)]
-    parityColumns = [0 for x in range(4)]
-    parityRows = [0 for x in range(2)]
+    parityMatrix  = [[0 for x in range(coluna)] for y in range(linha)]
+    parityColumns = [0 for x in range(coluna)]
+    parityRows    = [0 for x in range(linha)]
     decodedPacket = [0 for x in range(len(transmittedPacket))]
 
     n = 0
 
-    for i in range(0, len(transmittedPacket), 14):
+    for i in range(0, len(transmittedPacket), (linha*coluna+linha+coluna)):
 
-        for j in range(2):
-            for k in range(4):
-                parityMatrix[j][k] = transmittedPacket[i + 4 * j + k]
+        for j in range(linha):
+            for k in range(coluna):
+                parityMatrix[j][k] = transmittedPacket[i + coluna * j + k]
 
-        ##
-        # Bits de paridade das colunas.
-        ##
-        for j in range(4):
-            parityColumns[j] = transmittedPacket[i + 8 + j]
+        for j in range(coluna):
+            parityColumns[j] = transmittedPacket[i + (linha*coluna) + j]
 
-        ##
-        # Bits de paridade das linhas.
-        ##
-        for j in range(2):
-            parityRows[j] = transmittedPacket[i + 12 + j]
+        for j in range(linha):
+            parityRows[j] = transmittedPacket[i + (linha*coluna+coluna) + j]
 
-        ##
-        # Verificacao dos bits de paridade: colunas.
-        # Note que paramos no primeiro erro, ja que se houver mais
-        # erros, o metodo eh incapaz de corrigi-los de qualquer
-        # forma.
-        ##
         errorInColumn = -1
-        for j in range(4):
-            if (parityMatrix[0][j] + parityMatrix[1][j]) % 2 != parityColumns[j]:
+        somaMatrizColuna = somarColunaMatriz(parityMatrix, linha, j)
+        for j in range(coluna):
+            if (somaMatrizColuna) % 2 != parityColumns[j]:
                 errorInColumn = j
                 break
 
-        ##
-        # Verificacao dos bits de paridade: linhas.
-        # Note que paramos no primeiro erro, ja que se houver mais
-        # erros, o metodo eh incapaz de corrigi-los de qualquer
-        # forma.
-        ##
         errorInRow = -1
-        for j in range(2):
-
-            if (parityMatrix[j][0] + parityMatrix[j][1] + parityMatrix[j][2] + parityMatrix[j][3]) % 2 != parityRows[j]:
+        for j in range(linha):
+            somaMatrizLinha = somarLinhaMatriz(parityMatrix, coluna, j)
+            if (somaMatrizLinha) % 2 != parityRows[j]:
                 errorInRow = j
                 break
 
-        ##
-        # Se algum erro foi encontrado, corrigir.
-        ##
         if errorInRow > -1 and errorInColumn > -1:
 
             if parityMatrix[errorInRow][errorInColumn] == 1:
@@ -64,19 +44,21 @@ def decodePacket(transmittedPacket, linha, coluna):
             else:
                 parityMatrix[errorInRow][errorInColumn] = 1
 
-        ##
-        # Colocar bits (possivelmente corrigidos) na saida.
-        ##
-        for j in range(2):
-            for k in range(4):
-                decodedPacket[8 * n + 4 * j + k] = parityMatrix[j][k]
+        for j in range(linha):
+            for k in range(coluna):
+                decodedPacket[(linha*coluna) * n + coluna * j + k] = parityMatrix[j][k]
 
-        ##
-        # Incrementar numero de bytes na saida.
-        ##
         n = n + 1
 
     return decodedPacket
+
+def geomRand(p):
+
+    uRand = 0
+    while(uRand == 0):
+        uRand = random.uniform(0, 1)
+
+    return int(math.log(uRand) / math.log(1 - p))
 
 def insertErrors(codedPacket, errorProb):
     i = -1
@@ -86,18 +68,12 @@ def insertErrors(codedPacket, errorProb):
 
     while 1:
 
-        ##
-        # Sorteia a proxima posicao em que um erro sera inserido.
-        ##
         r = geomRand(errorProb)
         i = i + 1 + r
 
         if i >= len(transmittedPacket):
             break
 
-        ##
-        # Altera o valor do bit.
-        ##
         if transmittedPacket[i] == 1:
             transmittedPacket[i] = 0
         else:
@@ -105,7 +81,6 @@ def insertErrors(codedPacket, errorProb):
 
         n = n + 1
     return n, transmittedPacket
-
 
 def generateRandomPacket(l,linha):
 
@@ -125,34 +100,30 @@ def somarLinhaMatriz(parityMatrix, coluna, i):
 
     return somaMatrizLinha
 
+def countErrors(originalPacket, decodedPacket):
+
+    errors = 0
+
+    for i in range(len(originalPacket)):
+        if originalPacket[i] != decodedPacket[i]:
+            errors = errors + 1
+
+    return errors
+
 def codePacket(originalPacket,linha,coluna):
 
     parityMatrix = [[0 for x in range(coluna)] for y in range(linha)]
     codedLen = len(originalPacket) / (linha*coluna) * (linha*coluna+linha+coluna);
     codedPacket = [0 for x in range(codedLen)]
 
-    ##
-    # Itera por cada byte do pacote original.
-    ##
     for i in range(len(originalPacket) / (linha*coluna)):
 
-        ##
-        # Bits do i-esimo byte sao dispostos na matriz.
-        ##
         for j in range(linha):
             for k in range(coluna):
                 parityMatrix[j][k] = originalPacket[(i * linha*coluna) + (coluna * j) + k]
 
-        ##
-        # Replicacao dos bits de dados no pacote codificado.
-        ##
         for j in range((linha*coluna)):
             codedPacket[i * (linha*coluna+linha+coluna) + j] = originalPacket[i * (linha*coluna) + j]
-
-        ##
-        # Calculo dos bits de paridade, que sao colocados
-        # no pacote codificado: paridade das colunas.
-        ##
 
         for j in range(coluna):
             somaMatrizColuna = somarColunaMatriz(parityMatrix, linha, j)
@@ -160,11 +131,6 @@ def codePacket(originalPacket,linha,coluna):
                 codedPacket[i * (linha*coluna+linha+coluna) + (linha*coluna) + j] = 0
             else:
                 codedPacket[i * (linha*coluna+linha+coluna) + (linha*coluna) + j] = 1
-
-        ##
-        # Calculo dos bits de paridade, que sao colocados
-        # no pacote codificado: paridade das linhas.
-        ##
 
         for j in range(linha):
             somaMatrizLinha = somarLinhaMatriz(parityMatrix, coluna, j)
@@ -174,6 +140,14 @@ def codePacket(originalPacket,linha,coluna):
                 codedPacket[i * (linha*coluna+linha+coluna) + (linha*coluna+coluna) + j] = 1
 
     return codedPacket
+
+def contabilizadorErros(bitErrorCount):
+    totalBitErrorCount = 0
+    totalPacketErrorCount = 0
+    if bitErrorCount > 0:
+        totalBitErrorCount += bitErrorCount
+        totalPacketErrorCount = totalPacketErrorCount + 1
+    return totalBitErrorCount, totalPacketErrorCount
 
 def help(selfName):
 
@@ -217,13 +191,9 @@ print(codedPacket2)
 codedPacket3 = codePacket(originalPacket3, 3, 3)
 print(codedPacket3)
 
-
-def contadorErros(bitErrorCount):
-    if bitErrorCount > 0:
-        totalBitErrorCount = totalBitErrorCount + bitErrorCount
-        totalPacketErrorCount = totalPacketErrorCount + 1
-    return totalBitErrorCount, totalPacketErrorCount
-
+totalInsertedErrorCount1 = 0
+totalInsertedErrorCount2 = 0
+totalInsertedErrorCount3 = 0
 
 for i in range(reps):
     insertedErrorCount1, transmittedPacket1 = insertErrors(codedPacket1, errorProb)
@@ -235,45 +205,33 @@ for i in range(reps):
     insertedErrorCount3, transmittedPacket3 = insertErrors(codedPacket3, errorProb)
     totalInsertedErrorCount3 = totalInsertedErrorCount3 + insertedErrorCount3
 
-    decodedPacket1 = decodePacket(transmittedPacket, 2, 2)
-    decodedPacket2 = decodePacket(transmittedPacket, 2, 3)
-    decodedPacket3 = decodePacket(transmittedPacket, 3, 3)
+    decodedPacket1 = decodePacket(transmittedPacket1, 2, 2)
+    decodedPacket2 = decodePacket(transmittedPacket2, 2, 3)
+    decodedPacket3 = decodePacket(transmittedPacket3, 3, 3)
 
     bitErrorCount1 = countErrors(originalPacket1, decodedPacket1)
     bitErrorCount2 = countErrors(originalPacket2, decodedPacket2)
     bitErrorCount3 = countErrors(originalPacket3, decodedPacket3)
 
-    totalBitErrorCount1, totalPacketErrorCount1 = contadorErros(bitErrorCount1)
-    totalBitErrorCount2, totalPacketErrorCount2 = contadorErros(bitErrorCount2)
-    totalBitErrorCount3, totalPacketErrorCount3 = contadorErros(bitErrorCount3)
-    
+    totalBitErrorCount1, totalPacketErrorCount1 = contabilizadorErros(bitErrorCount1)
+    totalBitErrorCount2, totalPacketErrorCount2 = contabilizadorErros(bitErrorCount2)
+    totalBitErrorCount3, totalPacketErrorCount3 = contabilizadorErros(bitErrorCount3)
+
+def printsFinais(codedPacket, linha, coluna, totalInsertedErrorCount, totalBitErrorCount, totalPacketErrorCount):
+    print('Numero de transmissoes simuladas: {0:d}\n'.format(reps))
+    print('Numero de bits transmitidos: {0:d}'.format(reps * packetLength * (linha*coluna)))
+    print('Numero de bits errados inseridos: {0:d}\n'.format(totalInsertedErrorCount))
+    print('Taxa de erro de bits (antes da decodificacao): {0:.2f}%'.format(
+        float(totalInsertedErrorCount) / float(reps * len(codedPacket)) * 100.0))
+    print('Numero de bits corrompidos apos decodificacao: {0:d}'.format(totalBitErrorCount))
+    print('Taxa de erro de bits (apos decodificacao): {0:.2f}%\n'.format(
+        float(totalBitErrorCount) / float(reps * packetLength * (linha*coluna)) * 100.0))
+    print('Numero de pacotes corrompidos: {0:d}'.format(totalPacketErrorCount))
+    print('Taxa de erro de pacotes: {0:.2f}%'.format(float(totalPacketErrorCount) / float(reps) * 100.0))
+
+
 #CONTINUAR DAQUI!!!
 #da matriz 2x2
-print ('Numero de transmissoes simuladas: {0:d}\n'.format(reps))
-print ('Numero de bits transmitidos: {0:d}'.format(reps * packetLength * 8))
-print ('Numero de bits errados inseridos: {0:d}\n'.format(totalInsertedErrorCount))
-print ('Taxa de erro de bits (antes da decodificacao): {0:.2f}%'.format(float(totalInsertedErrorCount) / float(reps * len(codedPacket)) * 100.0))
-print ('Numero de bits corrompidos apos decodificacao: {0:d}'.format(totalBitErrorCount))
-print ('Taxa de erro de bits (apos decodificacao): {0:.2f}%\n'.format(float(totalBitErrorCount) / float(reps * packetLength * 8) * 100.0))
-print ('Numero de pacotes corrompidos: {0:d}'.format(totalPacketErrorCount))
-print ('Taxa de erro de pacotes: {0:.2f}%'.format(float(totalPacketErrorCount) / float(reps) * 100.0))
-
-#da matriz 2x3
-print ('Numero de transmissoes simuladas: {0:d}\n'.format(reps))
-print ('Numero de bits transmitidos: {0:d}'.format(reps * packetLength * 8))
-print ('Numero de bits errados inseridos: {0:d}\n'.format(totalInsertedErrorCount))
-print ('Taxa de erro de bits (antes da decodificacao): {0:.2f}%'.format(float(totalInsertedErrorCount) / float(reps * len(codedPacket)) * 100.0))
-print ('Numero de bits corrompidos apos decodificacao: {0:d}'.format(totalBitErrorCount))
-print ('Taxa de erro de bits (apos decodificacao): {0:.2f}%\n'.format(float(totalBitErrorCount) / float(reps * packetLength * 8) * 100.0))
-print ('Numero de pacotes corrompidos: {0:d}'.format(totalPacketErrorCount))
-print ('Taxa de erro de pacotes: {0:.2f}%'.format(float(totalPacketErrorCount) / float(reps) * 100.0))
-
-#da matriz 3x3
-print ('Numero de transmissoes simuladas: {0:d}\n'.format(reps))
-print ('Numero de bits transmitidos: {0:d}'.format(reps * packetLength * 8))
-print ('Numero de bits errados inseridos: {0:d}\n'.format(totalInsertedErrorCount))
-print ('Taxa de erro de bits (antes da decodificacao): {0:.2f}%'.format(float(totalInsertedErrorCount) / float(reps * len(codedPacket)) * 100.0))
-print ('Numero de bits corrompidos apos decodificacao: {0:d}'.format(totalBitErrorCount))
-print ('Taxa de erro de bits (apos decodificacao): {0:.2f}%\n'.format(float(totalBitErrorCount) / float(reps * packetLength * 8) * 100.0))
-print ('Numero de pacotes corrompidos: {0:d}'.format(totalPacketErrorCount))
-print ('Taxa de erro de pacotes: {0:.2f}%'.format(float(totalPacketErrorCount) / float(reps) * 100.0))
+printsFinais(codedPacket1, 2, 2, totalInsertedErrorCount1, totalBitErrorCount1, totalPacketErrorCount1)
+printsFinais(codedPacket2, 2, 3, totalInsertedErrorCount2, totalBitErrorCount2, totalPacketErrorCount2)
+printsFinais(codedPacket3, 3, 3, totalInsertedErrorCount3, totalBitErrorCount3, totalPacketErrorCount3)
