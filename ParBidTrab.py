@@ -114,9 +114,9 @@ def codePacket(originalPacket,linha,coluna):
 
     parityMatrix = [[0 for x in range(coluna)] for y in range(linha)]
     codedLen = len(originalPacket) / (linha*coluna) * (linha*coluna+linha+coluna);
-    codedPacket = [0 for x in range(codedLen)]
+    codedPacket = [0 for x in range(int(codedLen))]
 
-    for i in range(len(originalPacket) / (linha*coluna)):
+    for i in range(len(originalPacket) // (linha*coluna)):
 
         for j in range(linha):
             for k in range(coluna):
