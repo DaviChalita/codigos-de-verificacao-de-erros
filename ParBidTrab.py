@@ -5,9 +5,9 @@ import sys
 def decodePacket(transmittedPacket, linha, coluna):
 
     parityMatrix  = [[0 for x in range(coluna)] for y in range(linha)]
-    parityColumns = [0 for x in range(coluna)]
-    parityRows    = [0 for x in range(linha)]
-    decodedPacket = [0 for x in range(len(transmittedPacket))]
+    parityColumns =  [0 for x in range(coluna)]
+    parityRows    =  [0 for x in range(linha)]
+    decodedPacket =  [0 for x in range(len(transmittedPacket))]
 
     n = 0
 
@@ -182,8 +182,9 @@ originalPacket1 = generateRandomPacket(packetLength, 4)
 print(originalPacket1)
 originalPacket2 = generateRandomPacket(packetLength, 6)
 print(originalPacket2)
-originalPacket3 = generateRandomPacket(packetLength,9 )
+originalPacket3 = generateRandomPacket(packetLength, 9)
 print(originalPacket3)
+
 codedPacket1 = codePacket(originalPacket1, 2, 2)
 print(codedPacket1)
 codedPacket2 = codePacket(originalPacket2, 2, 3)
@@ -229,9 +230,9 @@ def printsFinais(codedPacket, linha, coluna, totalInsertedErrorCount, totalBitEr
     print('Numero de pacotes corrompidos: {0:d}'.format(totalPacketErrorCount))
     print('Taxa de erro de pacotes: {0:.2f}%'.format(float(totalPacketErrorCount) / float(reps) * 100.0))
 
-
-#CONTINUAR DAQUI!!!
-#da matriz 2x2
+print('\nMatriz 1:\n')
 printsFinais(codedPacket1, 2, 2, totalInsertedErrorCount1, totalBitErrorCount1, totalPacketErrorCount1)
+print('\nMatriz 2:\n')
 printsFinais(codedPacket2, 2, 3, totalInsertedErrorCount2, totalBitErrorCount2, totalPacketErrorCount2)
+print('\nMatriz 3:\n')
 printsFinais(codedPacket3, 3, 3, totalInsertedErrorCount3, totalBitErrorCount3, totalPacketErrorCount3)
