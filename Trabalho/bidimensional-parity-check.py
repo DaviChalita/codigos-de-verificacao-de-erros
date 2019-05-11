@@ -2,12 +2,13 @@ import random
 import math
 import sys
 
+#decodifica pacote
 def decodePacket(transmittedPacket, linha, coluna):
 
     parityMatrix  = [[0 for x in range(coluna)] for y in range(linha)]
-    parityColumns =  [0 for x in range(coluna)]
-    parityRows    =  [0 for x in range(linha)]
-    decodedPacket =  [0 for x in range(len(transmittedPacket))]
+    parityColumns = [0 for x in range(coluna)]
+    parityRows    = [0 for x in range(linha)]
+    decodedPacket = [0 for x in range(len(transmittedPacket))]
 
     n = 0
 
@@ -52,6 +53,7 @@ def decodePacket(transmittedPacket, linha, coluna):
 
     return decodedPacket
 
+#funcao que gera valor aleatorio
 def geomRand(p):
 
     uRand = 0
@@ -60,6 +62,7 @@ def geomRand(p):
 
     return int(math.log(uRand) / math.log(1 - p))
 
+#cria erros aleatorios para serem inseridos nos pacotes
 def insertErrors(codedPacket, errorProb):
     i = -1
     n = 0
@@ -82,10 +85,12 @@ def insertErrors(codedPacket, errorProb):
         n = n + 1
     return n, transmittedPacket
 
+#gera pacote aleatorio
 def generateRandomPacket(l,linha):
 
     return [random.randint(0,1) for x in range(linha * l)]
 
+#soma os valores das colunas da matriz para depois verificar com os bits de paridade
 def somarColunaMatriz(parityMatrix, linha, j):
     somaMatrizColuna = 0
     for i in range(linha):
@@ -93,6 +98,7 @@ def somarColunaMatriz(parityMatrix, linha, j):
 
     return somaMatrizColuna
 
+#soma os valores das linhas da matriz para depois verificar com os bits de paridade
 def somarLinhaMatriz(parityMatrix, coluna, i):
     somaMatrizLinha = 0
     for j in range(coluna):
@@ -100,6 +106,7 @@ def somarLinhaMatriz(parityMatrix, coluna, i):
 
     return somaMatrizLinha
 
+#faz a contagem de bits que vieram diferentes do transmissor
 def countErrors(originalPacket, decodedPacket):
 
     errors = 0
@@ -110,6 +117,7 @@ def countErrors(originalPacket, decodedPacket):
 
     return errors
 
+#codifica pacotes
 def codePacket(originalPacket,linha,coluna):
 
     parityMatrix = [[0 for x in range(coluna)] for y in range(linha)]
@@ -117,11 +125,12 @@ def codePacket(originalPacket,linha,coluna):
     codedPacket = [0 for x in range(int(codedLen))]
 
     for i in range(len(originalPacket) // (linha*coluna)):
-
+        #cria os bits de paridade
         for j in range(linha):
             for k in range(coluna):
                 parityMatrix[j][k] = originalPacket[(i * linha*coluna) + (coluna * j) + k]
 
+        #ate o final da funcao, sao repeticoes para codificar o pacote com as paridades
         for j in range((linha*coluna)):
             codedPacket[i * (linha*coluna+linha+coluna) + j] = originalPacket[i * (linha*coluna) + j]
 
@@ -141,6 +150,7 @@ def codePacket(originalPacket,linha,coluna):
 
     return codedPacket
 
+#faz a contagem de erros da matriz
 def contabilizadorErros(bitErrorCount):
     totalBitErrorCount = 0
     totalPacketErrorCount = 0
@@ -149,6 +159,7 @@ def contabilizadorErros(bitErrorCount):
         totalPacketErrorCount = totalPacketErrorCount + 1
     return totalBitErrorCount, totalPacketErrorCount
 
+#descreve como os argumentos devem ser inseridos no prompt de comando
 def help(selfName):
 
     sys.stderr.write("Simulador de metodos de FEC/codificacao.\n\n")
@@ -162,40 +173,38 @@ def help(selfName):
 
     sys.exit(1)
 
-totalBitErrorCount = 0
-totalPacketErrorCount = 0
-totalInsertedErrorCount = 0
-
+#se a quantidade de argumentos no prompt de comando for != 4, ele mostra a ajuda
 if len(sys.argv) != 4:
     help(sys.argv[0])
 
+#atribui os valores dos argumentos em suas respectivas variaveis
 packetLength = int(sys.argv[1])
 reps = int(sys.argv[2])
 errorProb = float(sys.argv[3])
 
+#se os argumentos forem invalidos, tambem mostra a ajuda
 if packetLength <= 0 or reps <= 0 or errorProb < 0 or errorProb > 1:
     help(sys.argv[0])
 
+#inicializa pseudo numero aleatorio
 random.seed()
 
+#gera os pacotes aleatorios
 originalPacket1 = generateRandomPacket(packetLength, 4)
-print(originalPacket1)
 originalPacket2 = generateRandomPacket(packetLength, 6)
-print(originalPacket2)
 originalPacket3 = generateRandomPacket(packetLength, 9)
-print(originalPacket3)
 
+#codifica os pacotes gerados
 codedPacket1 = codePacket(originalPacket1, 2, 2)
-print(codedPacket1)
 codedPacket2 = codePacket(originalPacket2, 2, 3)
-print(codedPacket2)
 codedPacket3 = codePacket(originalPacket3, 3, 3)
-print(codedPacket3)
 
+#inicializa os contadores de erro de bit totais, de pacotes com erro e de erros inseridos
 totalInsertedErrorCount1 = 0
 totalInsertedErrorCount2 = 0
 totalInsertedErrorCount3 = 0
 
+#conta erros dos pacotes que chegaram no receptor
 for i in range(reps):
     insertedErrorCount1, transmittedPacket1 = insertErrors(codedPacket1, errorProb)
     totalInsertedErrorCount1 = totalInsertedErrorCount1 + insertedErrorCount1
@@ -218,6 +227,7 @@ for i in range(reps):
     totalBitErrorCount2, totalPacketErrorCount2 = contabilizadorErros(bitErrorCount2)
     totalBitErrorCount3, totalPacketErrorCount3 = contabilizadorErros(bitErrorCount3)
 
+#printa os resultados da comunicacao
 def printsFinais(codedPacket, linha, coluna, totalInsertedErrorCount, totalBitErrorCount, totalPacketErrorCount):
     print('Numero de transmissoes simuladas: {0:d}\n'.format(reps))
     print('Numero de bits transmitidos: {0:d}'.format(reps * packetLength * (linha*coluna)))
