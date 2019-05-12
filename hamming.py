@@ -20,38 +20,36 @@ def insereBitsParidade(arr):
     arr = atribuiValorBitsParidade(arr)
     return arr
 
-def posicionaBitsParidade(arr):
+def posicionaBitsParidade(palavra):
     
-    arrLen = len(arr)
+    arrLen = len(palavra)
 
-    ##
-    # Bit inserido identificado pelo número 2, 
-    # valor é posteriormente corrigido
-    ##
-
-    for (expoente = 0; 2^expoente - 1 <= arrLen - 1; expoente+=1):
-
+    if (arrLen < 247):
         ##
-        # Acrescenta uma posição ao array
+        # Bit inserido identificado pelo número 2,
+        # valor é posteriormente corrigido
         ##
+        for (expoente = 0; ((2 ** expoente) - 1) <= arrLen - 1; expoente+=1):
+            ##
+            # Acrescenta uma posição ao array
+            ##
+            arrLen = arrLen + 1
+            for (i = arrLen - 1; i >= 0; i-=1):
+                palavra[i + 1] = palavra[i]
 
-        arrLen = arrLen + 1
-        
-        for (i = arrLen - 1; i >= 0; i-=1):
-            arr[i + 1] = arr[i]
-        
-            if (i == 2^expoente - 1):
+                if (i == 2^expoente - 1):
 
-                ##
-                # Insere bit de paridade
-                ##
+                    ##
+                    # Insere bit de paridade
+                    ##
 
-                arr[i] = 2;
-                break
-    
-    return arr
+                    palavra[i] = 2;
+                    break
+    else:
+        print("Entre com um tamanho de mensagem váido")
+    return palavra
 
-def atribuiValorBitsParidade(arr)
+def atribuiValorBitsParidade(arr):
 
     for (expoente = 0; 2^expoente - 1 < len(arr) - 1; expoente+=1):
         bitParidade = 2^expoente - 1
@@ -72,6 +70,65 @@ def atribuiValorBitsParidade(arr)
             arr[bitParidade] = cont%2
 
     return arr
+
+
+######
+# JP #
+######
+# Função para criar um novo pacate a partir da plavra original
+def criaNovoPacote(palavraOriginal):
+
+    # Calcula o tamanho da palavra
+    tamPalavraOriginal = len(palavraOriginal)
+
+    # https://pt.wikipedia.org/wiki/C%C3%B3digo_de_Hamming#Estrutura
+    if (tamPalavraOriginal <= 247):
+        # Calcula a quantidade de bits de paridade
+        qtdParidade = math.log(tamPalavraOriginal, 2)
+        # Calcula o tamanho total da mensagem, com os bits de paridade
+        tamNovaPalavra = tamPalavraOriginal + qtdParidade
+
+
+        # Variável para identificar as potências de 2
+        expoente = 0
+        # Variável que representa o índice atual da palavra original
+        indexPalavraOriginal = 0
+        # Nova mensagem
+        novaPalavra = []
+        # Laço que percorrerá a nova mensagem
+        for x in tamNovaPalavra:
+            # Caso a posição atual seja de um bit de paridade (potência de 2)
+            if ((x+1) == math.pow(2, expoente)):
+                # Incrementamos o valor do expoente para achar a próxima
+                # Por hora, não adicionaremos valores a esta posição
+                expoente+=1
+            # Caso a posição atual seja de dados
+            else:
+                # Coloca o bit da palavra original nesta posição, respeitando sua ordem
+                novaPalavra[x] = palavraOriginal[indexPalavraOriginal]
+                indexPalavraOriginal+=1
+
+        # Retorna a nova mensagem coms os bits de dados inseridos
+        return novaPalavra
+    else:
+        print("Entre com um tamanho válido de palavra!")
+    return None
+
+
+######
+# JP #
+######
+def defineParidade(palavraOriginal):
+
+    # Calcula o tamanho da palavra
+    tamPalavraOriginal = len(palavraOriginal)
+
+    if (tamPalavraOriginal <= 255):
+
+
+    else:
+        print("Entre com um tamanho válido de palavra!")
+    return None
 
 
 ##
