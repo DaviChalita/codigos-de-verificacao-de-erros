@@ -2,188 +2,18 @@ import random
 import math
 import sys
 
-#########
-# Implementacao um esquema sem qualquer metodo de codificao.
-#
-# Cada byte do pacote original eh mapeado para o mesmo byte no pacote
-# codificado.
 ##
 
-##
-# Função composta por duas funções, não é muito eficiente
-# pois percorre o array duas vezes: Uma para inserir os bits
-# de paridade e outra para atribuir o valor correto
-##
 
-def insereBitsParidade(arr):
-    arr = posicionaBitsParidade(arr)
-    arr = atribuiValorBitsParidade(arr)
-    return arr
+def generateRandomPacket(l, tamanho):
 
-def posicionaBitsParidade(palavra):
-    
-    arrLen = len(palavra)
-
-    if (arrLen < 247):
-        ##
-        # Bit inserido identificado pelo número 2,
-        # valor é posteriormente corrigido
-        ##
-        for (expoente = 0; ((2 ** expoente) - 1) <= arrLen - 1; expoente+=1):
-            ##
-            # Acrescenta uma posição ao array
-            ##
-            arrLen = arrLen + 1
-            for (i = arrLen - 1; i >= 0; i-=1):
-                palavra[i + 1] = palavra[i]
-
-                if (i == 2^expoente - 1):
-
-                    ##
-                    # Insere bit de paridade
-                    ##
-
-                    palavra[i] = 2;
-                    break
-    else:
-        print("Entre com um tamanho de mensagem váido")
-    return palavra
-
-def atribuiValorBitsParidade(arr):
-
-    for (expoente = 0; 2^expoente - 1 < len(arr) - 1; expoente+=1):
-        bitParidade = 2^expoente - 1
-
-        if (arr[bitParidade] == 2):
-            cont = 0
-
-            for (i = bitParidade; i < len(arr); i += arr[bitParidade] + 1):
-                for (j = 0; j < arr[bitParidade]; j+=1):
-
-                    ##
-                    # Condição garante que bit de paridade não verifique ele mesmo
-                    ##
-
-                    if (i+j != bitParidade):
-                        cont+= arr[i+j]
-
-            arr[bitParidade] = cont%2
-
-    return arr
-
-
-######
-# JP #
-######
-# Função para criar um novo pacate a partir da plavra original
-def criaNovoPacote(palavraOriginal):
-
-    # Calcula o tamanho da palavra
-    tamPalavraOriginal = len(palavraOriginal)
-
-    # https://pt.wikipedia.org/wiki/C%C3%B3digo_de_Hamming#Estrutura
-    if (tamPalavraOriginal <= 247):
-        # Calcula a quantidade de bits de paridade
-        qtdParidade = math.log(tamPalavraOriginal, 2)
-        # Calcula o tamanho total da mensagem, com os bits de paridade
-        tamNovaPalavra = tamPalavraOriginal + qtdParidade
-
-
-        # Variável para identificar as potências de 2
-        expoente = 0
-        # Variável que representa o índice atual da palavra original
-        indexPalavraOriginal = 0
-        # Nova mensagem
-        novaPalavra = []
-        # Laço que percorrerá a nova mensagem
-        for x in tamNovaPalavra:
-            # Caso a posição atual seja de um bit de paridade (potência de 2)
-            if ((x+1) == math.pow(2, expoente)):
-                # Incrementamos o valor do expoente para achar a próxima
-                # Por hora, não adicionaremos valores a esta posição
-                expoente+=1
-            # Caso a posição atual seja de dados
-            else:
-                # Coloca o bit da palavra original nesta posição, respeitando sua ordem
-                novaPalavra[x] = palavraOriginal[indexPalavraOriginal]
-                indexPalavraOriginal+=1
-
-        # Retorna a nova mensagem coms os bits de dados inseridos
-        return novaPalavra
-    else:
-        print("Entre com um tamanho válido de palavra!")
-    return None
-
-
-######
-# JP #
-######
-def defineParidade(palavraOriginal):
-
-    # Calcula o tamanho da palavra
-    tamPalavraOriginal = len(palavraOriginal)
-
-    if (tamPalavraOriginal <= 255):
-
-
-    else:
-        print("Entre com um tamanho válido de palavra!")
-    return None
-
-
-##
-# Codifica o pacote de entrada, gerando um pacote
-# de saida com bits redundantes.
-##
-def codePacket(originalPacket):
-
-
-
-    ##
-    # TODO: completar!
-    # Argumentos:
-    #  - originalPacket: pacote original a ser codificado na forma de uma lista.
-    # Cada entrada na lista representa um bit do pacote (inteiro 0 ou 1).
-    # Valor de retorno: pacote codificado no mesmo formato.
-    ##
-    return ...
-
-##
-# Executa decodificacao do pacote transmittedPacket, gerando
-# novo pacote decodedPacket.
-##
-def decodePacket(transmittedPacket):
-
-    ##
-    # TODO: completar!
-    # Argumentos:
-    #  - transmittedPacket: pacote apos simulacao da transmissao, potencialmente
-    # contendo erros. Cada entrada na lista representa um bit do pacote
-    # (inteiro 0 ou 1).
-    # Valor de retorno: pacote decodificado no mesmo formato.
-    ##
-    return ...
-
-###
-##
-# Outras funcoes.
-##
-###
-
-##
-# Gera conteudo aleatorio no pacote passado como
-# parametro. Pacote eh representado por um vetor
-# em que cada posicao representa um bit.
-# Comprimento do pacote (em bytes) deve ser
-# especificado.
-##
-def generateRandomPacket(l):
-
-    return [random.randint(0,1) for x in range(8 * l)]
+    return [random.randint(0, 1) for x in range(tamanho * l)]
 
 ##
 # Gera um numero pseudo-aleatorio com distribuicao geometrica.
 ##
+
+
 def geomRand(p):
 
     uRand = 0
@@ -198,6 +28,8 @@ def geomRand(p):
 # e de forma independente dos demais bits.
 # Retorna o numero de erros inseridos no pacote e o pacote com erros.
 ##
+
+
 def insertErrors(codedPacket, errorProb):
 
     i = -1
@@ -206,7 +38,7 @@ def insertErrors(codedPacket, errorProb):
     ##
     # Copia o conteudo do pacote codificado para o novo pacote.
     ##
-    transmittedPacket = list(codedPacket)
+    transmittedPacket = codedPacket
 
     while 1:
 
@@ -237,6 +69,8 @@ def insertErrors(codedPacket, errorProb):
 # o pacote original. O parametro packetLength especifica o
 # tamanho dos dois pacotes em bytes.
 ##
+
+
 def countErrors(originalPacket, decodedPacket):
 
     errors = 0
@@ -247,9 +81,110 @@ def countErrors(originalPacket, decodedPacket):
 
     return errors
 
+
+def numeroBitsParidade(originalPacket):
+    i = 0
+    while 2**i <= len(originalPacket)+i:
+        i += 1
+
+    return i
+
+def insereEspacosParaBitsParidade(originalPacket):
+    n = numeroBitsParidade(originalPacket)
+    i = 0
+    j = 0
+    k = 0
+    pacoteComBitsParidade = list()
+    while i < n + len(originalPacket):
+        if i == (2.**j - 1):
+            pacoteComBitsParidade.insert(i, 0)
+            j += 1
+        else:
+            pacoteComBitsParidade.insert(i, originalPacket[k])
+            k += 1
+        i += 1
+
+    return pacoteComBitsParidade
+
+
+def hamming(dados):
+    n = numeroBitsParidade(dados)
+    lista = insereEspacosParaBitsParidade(dados)
+    i = 0
+    while i < n:
+        k = 2.**i
+        j = 1
+        total = 0
+        while j*k - 1 < len(lista):
+            if j*k - 1 == len(lista) - 1:
+                lower_index = j*k - 1
+                temp = lista[int(lower_index):len(lista)]
+            elif (j+1)*k - 1 >= len(lista):
+                lower_index = j*k - 1
+                temp = lista[int(lower_index):len(lista)]
+            elif (j+1)*k - 1 < len(lista)-1:
+                lower_index = (j*k) - 1
+                upper_index = (j+1)*k - 1
+                temp = lista[int(lower_index):int(upper_index)]
+
+            total = total + sum(int(e) for e in temp)
+            j += 2
+        if total % 2 > 0:
+            lista[int(k-1)] = 1
+        i += 1
+
+    return lista
+
+
+def hammingCorrecao(codedPacketComErros):
+    n = numeroBitsParidade(codedPacketComErros)
+    i = 0
+    lista = list(codedPacketComErros)
+    errorthBit = 0
+    while i < n:
+        k = 2.**i
+        j = 1
+        total = 0
+        while j*k - 1 < len(lista):
+            if j*k - 1 == len(lista)-1:
+                lower_index = j*k - 1
+                temp = lista[int(lower_index):len(lista)]
+            elif(j+1)*k - 1 >= len(lista):
+                lower_index = j*k - 1
+                temp = lista[int(lower_index):len(lista)]
+            elif(j+1)*k - 1 < len(lista)-1:
+                lower_index = (j*k)-1
+                upper_index = (j+1)*k - 1
+                temp = lista[int(lower_index):int(upper_index)]
+            total += sum(int(e) for e in temp)
+            j += 2
+        if total % 2 > 0:
+            errorthBit += k
+        i += 1
+    if errorthBit >= 1:
+        if lista[int(errorthBit - 1)] == '0' or lista[int(errorthBit-1)] == 0:
+            lista[int(errorthBit-1)] = 1
+        else:
+            lista[int(errorthBit-1)] = 0
+    lista2 = list()
+    i = 0
+    j = 0
+    k = 0
+    while i < len(lista):
+        if i != (2**k)-1:
+            temp = lista[int(i)]
+            lista2.append(temp)
+            j += 1
+        else:
+            k += 1
+        i += 1
+    return lista2
+
 ##
 # Exibe modo de uso e aborta execucao.
 ##
+
+
 def help(selfName):
 
     sys.stderr.write("Simulador de metodos de FEC/codificacao.\n\n")
@@ -276,6 +211,8 @@ def help(selfName):
 ##
 # Inicializacao de contadores.
 ##
+
+
 totalBitErrorCount = 0
 totalPacketErrorCount = 0
 totalInsertedErrorCount = 0
@@ -291,7 +228,7 @@ reps = int(sys.argv[2])
 errorProb = float(sys.argv[3])
 
 if packetLength <= 0 or reps <= 0 or errorProb < 0 or errorProb > 1:
-    help(argv[0])
+    help(sys.argv[0])
 
 ##
 # Inicializacao da semente do gerador de numeros
@@ -303,8 +240,19 @@ random.seed()
 # Geracao do pacote original aleatorio.
 ##
 
-originalPacket = generateRandomPacket(packetLength)
-codedPacket = codePacket(originalPacket)
+#originalPacket1 = generateRandomPacket(packetLength, 1)
+originalPacket2 = generateRandomPacket(packetLength, 4)
+#originalPacket3 = generateRandomPacket(packetLength, 11)
+print(originalPacket2)
+#ok
+#codedPacket1 = hamming(originalPacket1)
+codedPacket2 = hamming(originalPacket2)
+#codedPacket3 = hamming(originalPacket3)
+print(codedPacket2)
+#ok
+#totalInsertedErrorCount1 = 0
+totalInsertedErrorCount2 = 0
+#totalInsertedErrorCount3 = 0
 
 ##
 # Loop de repeticoes da simulacao.
@@ -314,29 +262,48 @@ for i in range(reps):
     ##
     # Gerar nova versao do pacote com erros aleatorios.
     ##
-    insertedErrorCount, transmittedPacket = insertErrors(codedPacket, errorProb)
-    totalInsertedErrorCount = totalInsertedErrorCount + insertedErrorCount
+   # insertedErrorCount1, transmittedPacket1 = insertErrors(codedPacket1, errorProb)
+   # totalInsertedErrorCount1 = totalInsertedErrorCount1 + insertedErrorCount1
 
+    insertedErrorCount2, transmittedPacket2 = insertErrors(codedPacket2, errorProb)
+    totalInsertedErrorCount2 = totalInsertedErrorCount2 + insertedErrorCount2
+
+   # insertedErrorCount3, transmittedPacket3 = insertErrors(codedPacket3, errorProb)
+   # totalInsertedErrorCount3 = totalInsertedErrorCount3 + insertedErrorCount3
+    print(transmittedPacket2)
+#ok
     ##
     # Gerar versao decodificada do pacote.
     ##
-    decodedPacket = decodePacket(transmittedPacket)
+    #decodedPacket1 = hammingCorrecao(transmittedPacket1)
+    decodedPacket2 = hammingCorrecao(transmittedPacket2)
+   # decodedPacket3 = hammingCorrecao(transmittedPacket3)
+    print(decodedPacket2)
+  #  bitErrorCount1 = countErrors(originalPacket1, decodedPacket1)
+  #  bitErrorCount2 = countErrors(originalPacket2, decodedPacket2)
+  #  bitErrorCount3 = countErrors(originalPacket3, decodedPacket3)
 
-    ##
-    # Contar erros.
-    ##
-    bitErrorCount = countErrors(originalPacket, decodedPacket)
+ #   totalBitErrorCount1, totalPacketErrorCount1 = contabilizadorErros(bitErrorCount1)
+  #  totalBitErrorCount2, totalPacketErrorCount2 = contabilizadorErros(bitErrorCount2)
+  #  totalBitErrorCount3, totalPacketErrorCount3 = contabilizadorErros(bitErrorCount3)
 
-    if bitErrorCount > 0:
 
-        totalBitErrorCount = totalBitErrorCount + bitErrorCount
-        totalPacketErrorCount = totalPacketErrorCount + 1
+def printsFinais(codedPacket, param, totalInsertedErrorCount, totalBitErrorCount, totalPacketErrorCount):
+    print('Numero de transmissoes simuladas: {0:d}\n'.format(reps))
+    print('Numero de bits transmitidos: {0:d}'.format(reps * packetLength * param))
+    print('Numero de bits errados inseridos: {0:d}\n'.format(totalInsertedErrorCount))
+    print('Taxa de erro de bits (antes da decodificacao): {0:.2f}%'.format(
+        float(totalInsertedErrorCount) / float(reps * len(codedPacket)) * 100.0))
+    print('Numero de bits corrompidos apos decodificacao: {0:d}'.format(totalBitErrorCount))
+    print('Taxa de erro de bits (apos decodificacao): {0:.2f}%\n'.format(
+        float(totalBitErrorCount) / float(reps * packetLength * param) * 100.0))
+    print('Numero de pacotes corrompidos: {0:d}'.format(totalPacketErrorCount))
+    print('Taxa de erro de pacotes: {0:.2f}%'.format(float(totalPacketErrorCount) / float(reps) * 100.0))
 
-print ('Numero de transmissoes simuladas: {0:d}\n'.format(reps))
-print ('Numero de bits transmitidos: {0:d}'.format(reps * packetLength * 8))
-print ('Numero de bits errados inseridos: {0:d}\n'.format(totalInsertedErrorCount))
-print ('Taxa de erro de bits (antes da decodificacao): {0:.2f}%'.format(float(totalInsertedErrorCount) / float(reps * len(codedPacket)) * 100.0))
-print ('Numero de bits corrompidos apos decodificacao: {0:d}'.format(totalBitErrorCount))
-print ('Taxa de erro de bits (apos decodificacao): {0:.2f}%\n'.format(float(totalBitErrorCount) / float(reps * packetLength * 8) * 100.0))
-print ('Numero de pacotes corrompidos: {0:d}'.format(totalPacketErrorCount))
-print ('Taxa de erro de pacotes: {0:.2f}%'.format(float(totalPacketErrorCount) / float(reps) * 100.0))
+
+#print('\nMatriz 1:\n')
+#printsFinais(codedPacket1, 1, totalInsertedErrorCount1, totalBitErrorCount1, totalPacketErrorCount1)
+#print('\nMatriz 2:\n')
+#printsFinais(codedPacket2, 4, totalInsertedErrorCount2, totalBitErrorCount2, totalPacketErrorCount2)
+#print('\nMatriz 3:\n')
+#printsFinais(codedPacket3, 11, totalInsertedErrorCount3, totalBitErrorCount3, totalPacketErrorCount3)
