@@ -83,25 +83,26 @@ def countErrors(originalPacket, decodedPacket):
 
 
 def numeroBitsParidade(originalPacket):
-    i = 0
-    while 2**i <= len(originalPacket)+i:
-        i += 1
+    qtdBitsParidade = 0
+    while 2**qtdBitsParidade <= len(originalPacket)+qtdBitsParidade:
+        qtdBitsParidade += 1
 
-    return i
+    return qtdBitsParidade
 
 def insereEspacosParaBitsParidade(originalPacket):
-    n = numeroBitsParidade(originalPacket)
+    #coloca valor 0 nas posicoes aonde ficarao os bits de paridade
+    n = numeroBitsParidade(originalPacket) #conta qts bits de paridade precisa
     i = 0
-    j = 0
-    k = 0
-    pacoteComBitsParidade = list()
+    nBitsPari = 0
+    nBitsDado = 0
+    pacoteComBitsParidade = list() #cria lista para facilitar manipulacao
     while i < n + len(originalPacket):
-        if i == (2.**j - 1):
+        if i == (2**nBitsPari - 1):
             pacoteComBitsParidade.insert(i, 0)
-            j += 1
+            nBitsPari += 1
         else:
-            pacoteComBitsParidade.insert(i, originalPacket[k])
-            k += 1
+            pacoteComBitsParidade.insert(i, originalPacket[nBitsDado])
+            nBitsDado += 1
         i += 1
 
     return pacoteComBitsParidade
@@ -110,32 +111,33 @@ def insereEspacosParaBitsParidade(originalPacket):
 def hamming(dados):
     n = numeroBitsParidade(dados)
     lista = insereEspacosParaBitsParidade(dados)
+    #lista ja esta com os bits de paridade posiconados, seus valores nao estao corretos
     i = 0
     while i < n:
-        k = 2.**i
-        j = 1
+        k = 2**i #posicao dos bits de paridade eh potencia de 2
+        j = 1 #bits de dados comecam na posicao 1
         total = 0
+        #percorre as posicoes dos bits de paridade e separa em sublistas
         while j*k - 1 < len(lista):
-            if j*k - 1 == len(lista) - 1:
-                lower_index = j*k - 1
-                temp = lista[int(lower_index):len(lista)]
-            elif (j+1)*k - 1 >= len(lista):
-                lower_index = j*k - 1
-                temp = lista[int(lower_index):len(lista)]
+            if (j*k - 1 == len(lista) - 1) or ((j+1)*k - 1 >= len(lista)):
+                indiceInferior = j * k - 1
+                temp = lista[int(indiceInferior):len(lista)]
             elif (j+1)*k - 1 < len(lista)-1:
-                lower_index = (j*k) - 1
-                upper_index = (j+1)*k - 1
-                temp = lista[int(lower_index):int(upper_index)]
-
+                indiceInferior = (j * k) - 1
+                indiceSuperior = (j+1)*k - 1
+                temp = lista[int(indiceInferior):int(indiceSuperior)]
+            #soma valores para verificar bit de paridade
             total = total + sum(int(e) for e in temp)
             j += 2
+        #se bit de paridade nao for divisivel por 2 entao posicao recebe 1
+        #senao, mantem o 0 atribuido anteriormente
         if total % 2 > 0:
             lista[int(k-1)] = 1
         i += 1
 
     return lista
 
-
+## \/ esse nao funciona corretamente
 def hammingCorrecao(codedPacketComErros):
     n = numeroBitsParidade(codedPacketComErros)
     i = 0
@@ -248,6 +250,7 @@ print(originalPacket2)
 #codedPacket1 = hamming(originalPacket1)
 codedPacket2 = hamming(originalPacket2)
 #codedPacket3 = hamming(originalPacket3)
+print("codificado\n")
 print(codedPacket2)
 #ok
 #totalInsertedErrorCount1 = 0
