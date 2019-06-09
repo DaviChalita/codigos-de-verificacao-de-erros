@@ -5,9 +5,9 @@ import sys
 ##
 
 
-def generateRandomPacket(l, tamanho):
+def generateRandomPacket(tamanho):
 
-    return [random.randint(0, 1) for x in range(tamanho * l)]
+    return [random.randint(0, 1) for x in range(tamanho)]
 
 ##
 # Gera um numero pseudo-aleatorio com distribuicao geometrica.
@@ -74,11 +74,9 @@ def insertErrors(codedPacket, errorProb):
 def countErrors(originalPacket, decodedPacket):
 
     errors = 0
-
     for i in range(len(originalPacket)):
         if originalPacket[i] != decodedPacket[i]:
             errors = errors + 1
-
     return errors
 
 
@@ -241,72 +239,45 @@ random.seed()
 ##
 # Geracao do pacote original aleatorio.
 ##
+originalPacket = generateRandomPacket(packetLength)
+print("Pacote original: ", originalPacket)
 
-#originalPacket1 = generateRandomPacket(packetLength, 1)
-originalPacket2 = generateRandomPacket(packetLength, 4)
-#originalPacket3 = generateRandomPacket(packetLength, 11)
-print(originalPacket2)
-#ok
-#codedPacket1 = hamming(originalPacket1)
-codedPacket2 = hamming(originalPacket2)
-#codedPacket3 = hamming(originalPacket3)
-print("codificado\n")
-print(codedPacket2)
-#ok
-#totalInsertedErrorCount1 = 0
-totalInsertedErrorCount2 = 0
-#totalInsertedErrorCount3 = 0
+codedPacket = hamming(originalPacket)
+print("Pacote codificado: ", codedPacket)
+print("-------------------------------------------------")
 
 ##
 # Loop de repeticoes da simulacao.
 ##
 for i in range(reps):
 
-    ##
-    # Gerar nova versao do pacote com erros aleatorios.
-    ##
-   # insertedErrorCount1, transmittedPacket1 = insertErrors(codedPacket1, errorProb)
-   # totalInsertedErrorCount1 = totalInsertedErrorCount1 + insertedErrorCount1
+    # Cria novo pacote com erros, além de contar qnt erros foram inseridos
+    insertedErrorCount, transmittedPacket = insertErrors(codedPacket, errorProb)
+    # Contabiliza quantos erros foram gerados no total
+    totalInsertedErrorCount = totalInsertedErrorCount + insertedErrorCount
+    print("Erros inseridos: ", insertedErrorCount)
+    print("Pacote transmitido: ", transmittedPacket)
 
-    insertedErrorCount2, transmittedPacket2 = insertErrors(codedPacket2, errorProb)
-    totalInsertedErrorCount2 = totalInsertedErrorCount2 + insertedErrorCount2
-
-   # insertedErrorCount3, transmittedPacket3 = insertErrors(codedPacket3, errorProb)
-   # totalInsertedErrorCount3 = totalInsertedErrorCount3 + insertedErrorCount3
-    print(transmittedPacket2)
-#ok
-    ##
-    # Gerar versao decodificada do pacote.
-    ##
-    #decodedPacket1 = hammingCorrecao(transmittedPacket1)
-    decodedPacket2 = hammingCorrecao(transmittedPacket2)
-   # decodedPacket3 = hammingCorrecao(transmittedPacket3)
-    print(decodedPacket2)
-  #  bitErrorCount1 = countErrors(originalPacket1, decodedPacket1)
-  #  bitErrorCount2 = countErrors(originalPacket2, decodedPacket2)
-  #  bitErrorCount3 = countErrors(originalPacket3, decodedPacket3)
-
- #   totalBitErrorCount1, totalPacketErrorCount1 = contabilizadorErros(bitErrorCount1)
-  #  totalBitErrorCount2, totalPacketErrorCount2 = contabilizadorErros(bitErrorCount2)
-  #  totalBitErrorCount3, totalPacketErrorCount3 = contabilizadorErros(bitErrorCount3)
+    # Decodificando pacote
+    decodedPacket = hammingCorrecao(transmittedPacket)
+    print("Pacote decodificado: ", decodedPacket)
+    # Verifica quantos erros foram inseridos
+    bitErrorCount = countErrors(originalPacket, decodedPacket)
+    print("bitErrorCount: ", bitErrorCount)
 
 
-def printsFinais(codedPacket, param, totalInsertedErrorCount, totalBitErrorCount, totalPacketErrorCount):
-    print('Numero de transmissoes simuladas: {0:d}\n'.format(reps))
-    print('Numero de bits transmitidos: {0:d}'.format(reps * packetLength * param))
-    print('Numero de bits errados inseridos: {0:d}\n'.format(totalInsertedErrorCount))
+def printsFinais(codedPacket, totalInsertedErrorCount, totalBitErrorCount, totalPacketErrorCount):
+    print('Numero de transmissoes simuladas: {0:d}'.format(reps))
+    print('Numero de bits transmitidos: {0:d}'.format(reps * len(codedPacket)))
+    print('Numero de bits errados inseridos: {0:d}'.format(totalInsertedErrorCount))
     print('Taxa de erro de bits (antes da decodificacao): {0:.2f}%'.format(
         float(totalInsertedErrorCount) / float(reps * len(codedPacket)) * 100.0))
     print('Numero de bits corrompidos apos decodificacao: {0:d}'.format(totalBitErrorCount))
-    print('Taxa de erro de bits (apos decodificacao): {0:.2f}%\n'.format(
-        float(totalBitErrorCount) / float(reps * packetLength * param) * 100.0))
+    print('Taxa de erro de bits (apos decodificacao): {0:.2f}%'.format(
+        float(totalBitErrorCount) / float(reps * packetLength) * 100.0))
     print('Numero de pacotes corrompidos: {0:d}'.format(totalPacketErrorCount))
     print('Taxa de erro de pacotes: {0:.2f}%'.format(float(totalPacketErrorCount) / float(reps) * 100.0))
 
 
-#print('\nMatriz 1:\n')
-#printsFinais(codedPacket1, 1, totalInsertedErrorCount1, totalBitErrorCount1, totalPacketErrorCount1)
-#print('\nMatriz 2:\n')
-#printsFinais(codedPacket2, 4, totalInsertedErrorCount2, totalBitErrorCount2, totalPacketErrorCount2)
-#print('\nMatriz 3:\n')
-#printsFinais(codedPacket3, 11, totalInsertedErrorCount3, totalBitErrorCount3, totalPacketErrorCount3)
+print('\nMatriz 1:')
+printsFinais(codedPacket, totalInsertedErrorCount, totalBitErrorCount, totalPacketErrorCount)
