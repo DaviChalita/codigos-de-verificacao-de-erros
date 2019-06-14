@@ -2,12 +2,13 @@ import random
 import math
 import sys
 
+
 ##
 
 
 def generateRandomPacket(tamanho):
-
     return [random.randint(0, 1) for x in range(tamanho)]
+
 
 ##
 # Gera um numero pseudo-aleatorio com distribuicao geometrica.
@@ -15,12 +16,12 @@ def generateRandomPacket(tamanho):
 
 
 def geomRand(p):
-
     uRand = 0
-    while(uRand == 0):
+    while (uRand == 0):
         uRand = random.uniform(0, 1)
 
     return int(math.log(uRand) / math.log(1 - p))
+
 
 ##
 # Insere erros aleatorios no pacote, gerando uma nova versao.
@@ -31,9 +32,8 @@ def geomRand(p):
 
 
 def insertErrors(codedPacket, errorProb):
-
     i = -1
-    n = 0 # Numero de erros inseridos no pacote.
+    n = 0  # Numero de erros inseridos no pacote.
 
     ##
     # Copia o conteudo do pacote codificado para o novo pacote.
@@ -59,9 +59,10 @@ def insertErrors(codedPacket, errorProb):
         else:
             transmittedPacket[i] = 1
 
-        n = n + 1
+        n += 1
 
     return n, transmittedPacket
+
 
 ##
 # Conta o numero de bits errados no pacote
@@ -72,7 +73,6 @@ def insertErrors(codedPacket, errorProb):
 
 
 def countErrors(originalPacket, decodedPacket):
-
     errors = 0
     for i in range(len(originalPacket)):
         if originalPacket[i] != decodedPacket[i]:
@@ -82,20 +82,19 @@ def countErrors(originalPacket, decodedPacket):
 
 def numeroBitsParidade(originalPacket):
     qtdBitsParidade = 0
-    while 2**qtdBitsParidade <= len(originalPacket)+qtdBitsParidade:
+    while 2 ** qtdBitsParidade <= len(originalPacket) + qtdBitsParidade:
         qtdBitsParidade += 1
 
     return qtdBitsParidade
 
+
 def insereEspacosParaBitsParidade(originalPacket):
-    #coloca valor 0 nas posicoes aonde ficarao os bits de paridade
-    n = numeroBitsParidade(originalPacket) #conta qts bits de paridade precisa
-    i = 0
-    nBitsPari = 0
-    nBitsDado = 0
-    pacoteComBitsParidade = list() #cria lista para facilitar manipulacao
+    # coloca valor 0 nas posicoes aonde ficarao os bits de paridade
+    n = numeroBitsParidade(originalPacket)  # conta qts bits de paridade precisa
+    i = nBitsPari = nBitsDado = 0
+    pacoteComBitsParidade = list()  # cria lista para facilitar manipulacao
     while i < n + len(originalPacket):
-        if i == (2**nBitsPari - 1):
+        if i == (2 ** nBitsPari - 1):
             pacoteComBitsParidade.insert(i, 0)
             nBitsPari += 1
         else:
@@ -106,79 +105,97 @@ def insereEspacosParaBitsParidade(originalPacket):
     return pacoteComBitsParidade
 
 
+# separa o codigo em sublistas, com seu primeiro bit sendo o de paridade
+# e o restante dos bits relacionados a ele facilita a implementacao,
+# com j sendo a posicao dos bits de dados
+# e k sendo a posicao dos bits de paridade
+# formula geral da lista: lista[(j*k)-1:((j+1)*k)-1]
 def hamming(dados):
     n = numeroBitsParidade(dados)
     lista = insereEspacosParaBitsParidade(dados)
-    #lista ja esta com os bits de paridade posiconados, seus valores nao estao corretos
+    # lista ja esta com os bits de paridade posiconados, seus valores nao estao corretos
     i = 0
+    # comeco do core do hamming, eh repetido na correcao
     while i < n:
-        k = 2**i #posicao dos bits de paridade eh potencia de 2
-        j = 1 #bits de dados comecam na posicao 1
+        k = 2 ** i  # posicao dos bits de paridade eh potencia de 2
+        j = 1  # bits de dados comecam na posicao 1
         total = 0
-        #percorre as posicoes dos bits de paridade e separa em sublistas
-        while j*k - 1 < len(lista):
-            if (j*k - 1 == len(lista) - 1) or ((j+1)*k - 1 >= len(lista)):
+        # percorre as posicoes dos bits de paridade e separa em sublistas
+        while j * k - 1 < len(lista):
+            if (j * k - 1 == len(lista) - 1) or ((j + 1) * k - 1 >= len(lista)):
                 indiceInferior = j * k - 1
-                temp = lista[int(indiceInferior):len(lista)]
-            elif (j+1)*k - 1 < len(lista)-1:
+                listaTemporaria = lista[int(indiceInferior):len(lista)]
+            elif (j + 1) * k - 1 < len(lista) - 1:
                 indiceInferior = (j * k) - 1
-                indiceSuperior = (j+1)*k - 1
-                temp = lista[int(indiceInferior):int(indiceSuperior)]
-            #soma valores para verificar bit de paridade
-            total = total + sum(int(e) for e in temp)
+                indiceSuperior = (j + 1) * k - 1
+                listaTemporaria = lista[int(indiceInferior):int(indiceSuperior)]
+            # soma valores para verificar bit de paridade
+            total = total + sum(int(e) for e in listaTemporaria)
             j += 2
-        #se bit de paridade nao for divisivel por 2 entao posicao recebe 1
-        #senao, mantem o 0 atribuido anteriormente
+            # fim do core do hamming
+        # se bit de paridade nao for divisivel por 2 entao posicao recebe 1
+        # senao, mantem o 0 atribuido anteriormente
         if total % 2 > 0:
-            lista[int(k-1)] = 1
+            lista[int(k - 1)] = 1
         i += 1
 
     return lista
 
-## \/ esse nao funciona corretamente
+
+# mesmo comentario do hamming
 def hammingCorrecao(codedPacketComErros):
     n = numeroBitsParidade(codedPacketComErros)
-    i = 0
+    i = bitErrado = 0
     lista = list(codedPacketComErros)
-    errorthBit = 0
+    # comeco do core do hamming
     while i < n:
-        k = 2.**i
+        k = 2. ** i
         j = 1
         total = 0
-        while j*k - 1 < len(lista):
-            if j*k - 1 == len(lista)-1:
-                lower_index = j*k - 1
-                temp = lista[int(lower_index):len(lista)]
-            elif(j+1)*k - 1 >= len(lista):
-                lower_index = j*k - 1
-                temp = lista[int(lower_index):len(lista)]
-            elif(j+1)*k - 1 < len(lista)-1:
-                lower_index = (j*k)-1
-                upper_index = (j+1)*k - 1
-                temp = lista[int(lower_index):int(upper_index)]
-            total += sum(int(e) for e in temp)
+        while j * k - 1 < len(lista):
+            if (j * k - 1 == len(lista) - 1) or ((j + 1) * k - 1 >= len(lista)):
+                indiceInferior = j * k - 1
+                # lista temporaria com tamanho comecando do indice inferior e
+                # terminando no ultimo indice da lista
+                listaTemporaria = lista[int(indiceInferior):len(lista)]
+            elif (j + 1) * k - 1 < len(lista) - 1:
+                indiceInferior = (j * k) - 1
+                indiceSuperior = (j + 1) * k - 1
+                listaTemporaria = lista[int(indiceInferior):int(indiceSuperior)]
+            total += sum(int(e) for e in listaTemporaria)
             j += 2
+            # fim do core do hamming
         if total % 2 > 0:
-            errorthBit += k
+            bitErrado += k
         i += 1
-    if errorthBit >= 1:
-        if lista[int(errorthBit - 1)] == '0' or lista[int(errorthBit-1)] == 0:
-            lista[int(errorthBit-1)] = 1
+    if bitErrado >= 1:
+        if lista[int(bitErrado - 1)] == '0' or lista[int(bitErrado - 1)] == 0:
+            lista[int(bitErrado - 1)] = 1
         else:
-            lista[int(errorthBit-1)] = 0
-    lista2 = list()
-    i = 0
-    j = 0
-    k = 0
+            lista[int(bitErrado - 1)] = 0
+    # inicializa nova lista
+    listaCorrigida = list()
+    i = j = k = 0
+    # realoca os bits apos correcao para nova lista
     while i < len(lista):
-        if i != (2**k)-1:
-            temp = lista[int(i)]
-            lista2.append(temp)
+        if i != ((2 ** k) - 1):
+            listaTemporaria = lista[int(i)]
+            listaCorrigida.append(listaTemporaria)
             j += 1
         else:
             k += 1
         i += 1
-    return lista2
+    return listaCorrigida
+
+
+def contabilizadorErros(bitErrorCount):
+    totalBitErrorCount = 0
+    totalPacketErrorCount = 0
+    if bitErrorCount > 0:
+        totalBitErrorCount += bitErrorCount
+        totalPacketErrorCount = totalPacketErrorCount + 1
+    return totalBitErrorCount, totalPacketErrorCount
+
 
 ##
 # Exibe modo de uso e aborta execucao.
@@ -186,17 +203,18 @@ def hammingCorrecao(codedPacketComErros):
 
 
 def help(selfName):
-
     sys.stderr.write("Simulador de metodos de FEC/codificacao.\n\n")
     sys.stderr.write("Modo de uso:\n\n")
     sys.stderr.write("\t" + selfName + " <tam_pacote> <reps> <prob. erro>\n\n")
     sys.stderr.write("Onde:\n")
-    sys.stderr.write("\t- <tam_pacote>: tamanho do pacote usado nas simulacoes (em bytes).\n")
+    sys.stderr.write(
+        "\t- <tam_pacote>: tamanho do pacote usado nas simulacoes (em bits, deve ser de um tamanho compativel com hamming: 1, 4, 11, 26, 57, 120 ou 247).\n")
     sys.stderr.write("\t- <reps>: numero de repeticoes da simulacao.\n")
     sys.stderr.write("\t- <prob. erro>: probabilidade de erro de bits (i.e., probabilidade\n")
     sys.stderr.write("de que um dado bit tenha seu valor alterado pelo canal.)\n\n")
 
     sys.exit(1)
+
 
 ##
 # Programa principal:
@@ -213,9 +231,7 @@ def help(selfName):
 ##
 
 
-totalBitErrorCount = 0
-totalPacketErrorCount = 0
-totalInsertedErrorCount = 0
+totalBitErrorCount = totalPacketErrorCount = totalInsertedErrorCount = 0
 
 ##
 # Leitura dos argumentos de linha de comando.
@@ -227,7 +243,9 @@ packetLength = int(sys.argv[1])
 reps = int(sys.argv[2])
 errorProb = float(sys.argv[3])
 
-if packetLength <= 0 or reps <= 0 or errorProb < 0 or errorProb > 1:
+# verifica se tamanho do pacote é compativel com hamming e verifica as repeticoes
+# e a probabilidade de erro
+if packetLength not in (1, 4, 11, 26, 57, 120, 247) or reps <= 0 or errorProb < 0 or errorProb > 1:
     help(sys.argv[0])
 
 ##
@@ -240,30 +258,29 @@ random.seed()
 # Geracao do pacote original aleatorio.
 ##
 originalPacket = generateRandomPacket(packetLength)
-print("Pacote original: ", originalPacket)
-
+print("Pacote original: ")
+print(originalPacket)
 codedPacket = hamming(originalPacket)
-print("Pacote codificado: ", codedPacket)
+print("Pacote codificado: ")
+print(codedPacket)
 print("-------------------------------------------------")
-
+totalInsertedErrorCount = 0
 ##
 # Loop de repeticoes da simulacao.
 ##
 for i in range(reps):
-
-    # Cria novo pacote com erros, além de contar qnt erros foram inseridos
+    # Cria novo pacote com erros, alem de contar qnt erros foram inseridos
     insertedErrorCount, transmittedPacket = insertErrors(codedPacket, errorProb)
+
     # Contabiliza quantos erros foram gerados no total
-    totalInsertedErrorCount = totalInsertedErrorCount + insertedErrorCount
-    print("Erros inseridos: ", insertedErrorCount)
-    print("Pacote transmitido: ", transmittedPacket)
+    totalInsertedErrorCount += insertedErrorCount
 
     # Decodificando pacote
     decodedPacket = hammingCorrecao(transmittedPacket)
-    print("Pacote decodificado: ", decodedPacket)
     # Verifica quantos erros foram inseridos
     bitErrorCount = countErrors(originalPacket, decodedPacket)
-    print("bitErrorCount: ", bitErrorCount)
+
+    totalBitErrorCount, totalPacketErrorCount = contabilizadorErros(bitErrorCount)
 
 
 def printsFinais(codedPacket, totalInsertedErrorCount, totalBitErrorCount, totalPacketErrorCount):
@@ -274,10 +291,9 @@ def printsFinais(codedPacket, totalInsertedErrorCount, totalBitErrorCount, total
         float(totalInsertedErrorCount) / float(reps * len(codedPacket)) * 100.0))
     print('Numero de bits corrompidos apos decodificacao: {0:d}'.format(totalBitErrorCount))
     print('Taxa de erro de bits (apos decodificacao): {0:.2f}%'.format(
-        float(totalBitErrorCount) / float(reps * packetLength) * 100.0))
+        float(totalBitErrorCount) / float(reps * len(codedPacket)) * 100.0))
     print('Numero de pacotes corrompidos: {0:d}'.format(totalPacketErrorCount))
     print('Taxa de erro de pacotes: {0:.2f}%'.format(float(totalPacketErrorCount) / float(reps) * 100.0))
 
 
-print('\nMatriz 1:')
 printsFinais(codedPacket, totalInsertedErrorCount, totalBitErrorCount, totalPacketErrorCount)
