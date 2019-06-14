@@ -91,16 +91,16 @@ def numeroBitsParidade(originalPacket):
 def insereEspacosParaBitsParidade(originalPacket):
     # coloca valor 0 nas posicoes aonde ficarao os bits de paridade
     n = numeroBitsParidade(originalPacket)  # conta qts bits de paridade precisa
-    i = nBitsPari = nBitsDado = 0
+    cont = nBitsPari = nBitsDado = 0
     pacoteComBitsParidade = list()  # cria lista para facilitar manipulacao
-    while i < n + len(originalPacket):
-        if i == (2 ** nBitsPari - 1):
-            pacoteComBitsParidade.insert(i, 0)
+    while cont < n + len(originalPacket):
+        if cont == (2 ** nBitsPari - 1):
+            pacoteComBitsParidade.insert(cont, 0)
             nBitsPari += 1
         else:
-            pacoteComBitsParidade.insert(i, originalPacket[nBitsDado])
+            pacoteComBitsParidade.insert(cont, originalPacket[nBitsDado])
             nBitsDado += 1
-        i += 1
+        cont += 1
 
     return pacoteComBitsParidade
 
@@ -114,44 +114,13 @@ def hamming(dados):
     n = numeroBitsParidade(dados)
     lista = insereEspacosParaBitsParidade(dados)
     # lista ja esta com os bits de paridade posiconados, seus valores nao estao corretos
-    i = 0
+    cont = 0
     # comeco do core do hamming, eh repetido na correcao
-    while i < n:
-        k = 2 ** i  # posicao dos bits de paridade eh potencia de 2
+    while cont < n:
+        k = 2 ** cont  # posicao dos bits de paridade eh potencia de 2
         j = 1  # bits de dados comecam na posicao 1
         total = 0
         # percorre as posicoes dos bits de paridade e separa em sublistas
-        while j * k - 1 < len(lista):
-            if (j * k - 1 == len(lista) - 1) or ((j + 1) * k - 1 >= len(lista)):
-                indiceInferior = j * k - 1
-                listaTemporaria = lista[int(indiceInferior):len(lista)]
-            elif (j + 1) * k - 1 < len(lista) - 1:
-                indiceInferior = (j * k) - 1
-                indiceSuperior = (j + 1) * k - 1
-                listaTemporaria = lista[int(indiceInferior):int(indiceSuperior)]
-            # soma valores para verificar bit de paridade
-            total = total + sum(int(e) for e in listaTemporaria)
-            j += 2
-            # fim do core do hamming
-        # se bit de paridade nao for divisivel por 2 entao posicao recebe 1
-        # senao, mantem o 0 atribuido anteriormente
-        if total % 2 > 0:
-            lista[int(k - 1)] = 1
-        i += 1
-
-    return lista
-
-
-# mesmo comentario do hamming
-def hammingCorrecao(codedPacketComErros):
-    n = numeroBitsParidade(codedPacketComErros)
-    i = bitErrado = 0
-    lista = list(codedPacketComErros)
-    # comeco do core do hamming
-    while i < n:
-        k = 2. ** i
-        j = 1
-        total = 0
         while j * k - 1 < len(lista):
             if (j * k - 1 == len(lista) - 1) or ((j + 1) * k - 1 >= len(lista)):
                 indiceInferior = j * k - 1
@@ -162,29 +131,60 @@ def hammingCorrecao(codedPacketComErros):
                 indiceInferior = (j * k) - 1
                 indiceSuperior = (j + 1) * k - 1
                 listaTemporaria = lista[int(indiceInferior):int(indiceSuperior)]
-            total += sum(int(e) for e in listaTemporaria)
+            # soma valores para verificar bit de paridade
+            total = total + sum(int(x) for x in listaTemporaria)
+            j += 2
+            # fim do core do hamming
+        # se bit de paridade nao for divisivel por 2 entao posicao recebe 1
+        # senao, mantem o 0 atribuido anteriormente
+        if total % 2 > 0:
+            lista[int(k - 1)] = 1
+        cont += 1
+
+    return lista
+
+
+# mesmo comentario do hamming
+def hammingCorrecao(codedPacketComErros):
+    n = numeroBitsParidade(codedPacketComErros)
+    cont = bitErrado = 0
+    lista = list(codedPacketComErros)
+    # comeco do core do hamming, ver def hamming para comentarios mais detalhados
+    while cont < n:
+        k = 2. ** cont
+        j = 1
+        total = 0
+        while j * k - 1 < len(lista):
+            if (j * k - 1 == len(lista) - 1) or ((j + 1) * k - 1 >= len(lista)):
+                indiceInferior = j * k - 1
+                listaTemporaria = lista[int(indiceInferior):len(lista)]
+            elif (j + 1) * k - 1 < len(lista) - 1:
+                indiceInferior = (j * k) - 1
+                indiceSuperior = (j + 1) * k - 1
+                listaTemporaria = lista[int(indiceInferior):int(indiceSuperior)]
+            total += sum(int(x) for x in listaTemporaria)
             j += 2
             # fim do core do hamming
         if total % 2 > 0:
             bitErrado += k
-        i += 1
+        cont += 1
     if bitErrado >= 1:
-        if lista[int(bitErrado - 1)] == '0' or lista[int(bitErrado - 1)] == 0:
+        if lista[int(bitErrado - 1)] in ('0', 0):
             lista[int(bitErrado - 1)] = 1
         else:
             lista[int(bitErrado - 1)] = 0
     # inicializa nova lista
     listaCorrigida = list()
-    i = j = k = 0
+    cont = j = k = 0
     # realoca os bits apos correcao para nova lista
-    while i < len(lista):
-        if i != ((2 ** k) - 1):
-            listaTemporaria = lista[int(i)]
+    while cont < len(lista):
+        if cont != ((2 ** k) - 1):
+            listaTemporaria = lista[int(cont)]
             listaCorrigida.append(listaTemporaria)
             j += 1
         else:
             k += 1
-        i += 1
+        cont += 1
     return listaCorrigida
 
 
@@ -243,7 +243,7 @@ packetLength = int(sys.argv[1])
 reps = int(sys.argv[2])
 errorProb = float(sys.argv[3])
 
-# verifica se tamanho do pacote é compativel com hamming e verifica as repeticoes
+# verifica se tamanho do pacote eh compativel com hamming e verifica as repeticoes
 # e a probabilidade de erro
 if packetLength not in (1, 4, 11, 26, 57, 120, 247) or reps <= 0 or errorProb < 0 or errorProb > 1:
     help(sys.argv[0])
