@@ -85,17 +85,15 @@ lorem ipsum
     Como os diferentes parâmetros afetam a eficiência dos métodos implementados?
   <dt>
   <dd>
-    <b>Paridade Bidimensional: </b> Resposta aqui
-    <br/>
-    <b>Código de Hamming: </b> Resposta aqui
+    Quanto maior o tamanho do pacote, mais bits errados são inseridos, quanto maior o número de repetições menor proporcionalmente é a taxa de erros e quanto maior a probabilidade de erro, maior a taxa de erros de bits.
   </dd>
   <dt>
     O quão eficazes esses métodos são em relação a uma solução sem utilização de mecanismos de codificação?
   <dt>
   <dd>
-    <b>Paridade Bidimensional: </b> Resposta aqui
-    <br/>
-    <b>Código de Hamming: </b> Resposta aqui
+    Esses métodos são mais eficazes porque eles conseguem verificar uma quantidade maior de bits (vários bits de dados para 1 bit de controle) do que uma verificação sem mecanismo de codificação, 
+    
+- ![#f03c15](que não tem bits de controle?????)
   </dd>
   <dt>
     Qual método (paridade bidimensional ou Codificação de Hamming) foi mais eficiente em geral?
