@@ -91,9 +91,7 @@ lorem ipsum
     O quão eficazes esses métodos são em relação a uma solução sem utilização de mecanismos de codificação?
   <dt>
   <dd>
-    Esses métodos são mais eficazes porque eles conseguem verificar uma quantidade maior de bits (vários bits de dados para 1 bit de controle) do que uma verificação sem mecanismo de codificação, 
-
-- ![#f03c15](https://placehold.it/15/f03c15/000000?text=+) `que não tem bits de controle?????`
+    Esses métodos são mais eficazes porque eles conseguem verificar uma quantidade maior de bits (vários bits de dados para 1 bit de controle) do que uma verificação sem mecanismo de codificação, <span style="color:red;"><b>que não tem bits de controle???</b></span>
   </dd>
   <dt>
     Qual método (paridade bidimensional ou Codificação de Hamming) foi mais eficiente em geral?
