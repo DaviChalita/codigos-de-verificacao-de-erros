@@ -24,7 +24,10 @@ Nas sessões a seguir, explicaremos sobre os três métodos.
 Aqui, os pacotes não passam por nenhum método de codificação/decodificação. Ou seja, não há a detecção ou correção de erros.
 
 ### Paridade Bidimensional
-Lorem ipsum
+Os bits de dados são dispostos em uma matriz _m_ por _n_ e, então, adicionada uma linha e ma coluna para os bits de paridade.
+Os bits de cada linha e coluna são somados, a paridade deles é calculada e um bit de paridade é adicionada ao final de cada linha e coluna. Casa haja um número par de bits 1, o bit de paridade tem valor 0 (paridade par) ou 1 (paridade ímpar).
+
+Após calculada a paridade, o pacote codificado é enviado para o destinatário. Este, por sua vez, verifica cada célula da matriz de paridade cruzando o bit de paridade da linha com o da coluna, sendo capaz de detectar e corrigir quando há um, e somente um, bit errado.
 
 ### Código de Hamming
 Código de correção de erro (corrige no máximo 1 bit por pacote), seus bits de paridade se encontram nas posições com potência de 2, eles são inseridos durante o processo de codificação. 
@@ -51,10 +54,18 @@ $ py noFEC.py <tam_pacote> <reps> <prob. erro>
 ```
 
 Veremos, a seguir, uma breve descrição das principais funções utilizadas
-#### Função _A()_
-lorem ipsum
-#### Função _B()_
-lorem ipsum
+#### Função _codePacket(originalPacket)_
+"Codifica" o pacote. Porém, como não há codificação, apenas retorna o pacote original.
+#### Função _decodePacket(transmittedPacket)_
+"Decodifica" o pacote. Porém, como não decodificação, apenas retorna o pacote transmitido.
+#### Função _generateRandomPacket(l)_
+Gera um pacote aleatório de tamanho _l_.
+#### Função _geomRand(p)_
+Gera um numero pseudo-aleatorio com distribuicao geometrica.
+#### Função _insertErrors(codedPacket, errorProb)_
+Insere erros no pacote _codedPacket_ com probabilidade _errorProb_.
+#### Função _countErrors(originalPacket, decodedPacket)_
+Conta a quantidade de erros inseridos, comparando os bits do pacote original com os bits do pacote "decodificado".
 
 
 ### Paridade Bidimensional
@@ -66,15 +77,23 @@ $ py bidimensional-parity-check.py <tam_pacote> <reps> <prob. erro>
 
 Após a escolha dos parâmetros do usuário, os pacotes das matrizes 2x2, 2x3 e 3x3 são gerados e codificados, então os erros são inseridos aleatoriamente. Na decodificação dos pacotes, o programa gera novos bits de paridade sobre os bits do pacote recebido, verificando sua integridade e corrigindo até 1 bit errado por matriz. Então o programa imprime o resultado. 
 
-Veremos, a seguir, uma breve descrição das principais funções utilizadas
+Veremos, a seguir, uma breve descrição das principais funções utilizadas:
+#### Função _geomRand(p)_
+Gera um numero pseudo-aleatorio com distribuicao geometrica.
+#### Função _insertErrors(codedPacket, errorProb)_
+Insere erros no pacote _codedPacket_ com probabilidade _errorProb_.
 #### Função _generateRandomPacket(l,linha)_
 Gera um pacote aleatório, passando o tamanho do pacote e a quantidade de linhas da matriz.
 #### Função _codePacket(originalPacket,linha,coluna)_
 Codifica o pacote, passando o pacote original, a quantidade de linahs e colunas como parâmetros.
-#### Função _insertErrors(codedPacket, errorProb)_
-Insere erros no pacote codificado de acordo com a probabilidade passada como parâmetro.
 #### Função _decodePacket(transmittedPacket, linha, coluna)_
 Decodifica o pacote transmitido.
+#### Função _countErrors(originalPacket, decodedPacket)_
+Conta a quantidade de erros inseridos, comparando os bits do pacote original com os bits do pacote decodificado.
+#### Função _somarColunaMatriz(parityMatrix, linha, j)_
+Soma todos os valores na coluna _j_ da _parityMatrix_. A variável _linha_ é utilizada para percorrer todas as linhas da matriz.
+#### Função _somarLinhaMatriz(parityMatrix, coluna, i)_
+Soma todos os valores na linha _i_ da _parityMatrix_. A variável _coluna_ é utilizada para percorrer todas as colunas da matriz.
 
 ### Código de Hamming
 **Executando**
@@ -83,10 +102,22 @@ $ py hamming.py <qtd_bits_dados> <reps> <prob. erro>
 ```
 
 Veremos, a seguir, uma breve descrição das principais funções utilizadas
-#### Função _A()_
-lorem ipsum
-#### Função _B()_
-lorem ipsum
+#### Função _geomRand(p)_
+Gera um numero pseudo-aleatorio com distribuicao geometrica.
+#### Função _insertErrors(codedPacket, errorProb)_
+Insere erros no pacote _codedPacket_ com probabilidade _errorProb_.
+#### Função _generateRandomPacket(tamanho)_
+Gera um pacote aleatório, passando a quantidade de bits de dados.
+#### Função _countErrors(originalPacket, decodedPacket)_
+Conta a quantidade de erros inseridos, comparando os bits do pacote original com os bits do pacote decodificado.
+#### Função _numeroBitsParidade(originalPacket)_
+Determina a quantidade de bits de paridade, recebendo os bits de dados como parâmetro.
+#### Função _insereEspacosParaBitsParidade(originalPacket)_
+Cria um novo pacote, com espaços para os bits de paridade e com os bits de dados em suas devidas posições.
+#### Função _hamming(dados)_
+Cria um novo pacote, já com os valores finais dos bits de paridade.
+#### Função _hammingCorrecao(codedPacketComErros)_
+Função para decodificação e correção do pacote recebido.
 
 
 ## Análise dos métodos
@@ -118,3 +149,10 @@ lorem ipsum
     Resposta aqui
   </dd>  
 </dl>
+
+## Bibliografia
+[Código de Hamming - Codificação, Decodificação e Correção](https://www.youtube.com/watch?v=jmcWNPbsrD4)
+
+[Python function for generating hamming code and detecting single bit error for any size of data length](https://gist.github.com/vatsal-sodha/f8f16b1999a0b5228143e637d617c797)
+
+[Módulo Códigos: código de Hamming](http://eaulas.usp.br/portal/video.action?idItem=7727)
